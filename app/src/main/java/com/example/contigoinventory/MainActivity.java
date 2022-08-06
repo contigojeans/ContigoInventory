@@ -246,7 +246,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View clearBarcodes) {
                 Log.i("oncclick clear","Clicking the clear barcodes button");
-                Toast.makeText(getApplicationContext(),"Cleared Barcodes",Toast.LENGTH_SHORT).show();
                 AlertDialog.Builder builder= new AlertDialog.Builder(MainActivity.this);
                 builder.setCancelable(true);
                 builder.setTitle("Clearing All Scanned Barcodes");
@@ -268,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
                         barcode_list.clear();
                         barcode_docs.clear();
                         barcodeCount.setText("0");
+                        Toast.makeText(getApplicationContext(),"Cleared Barcodes",Toast.LENGTH_SHORT).show();
                     }
                 });
                 builder.show();
