@@ -55,11 +55,16 @@ import io.realm.Realm;
 import io.realm.mongodb.App;
 import io.realm.mongodb.AppConfiguration;
 import io.realm.mongodb.Credentials;
+import io.realm.mongodb.RealmResultTask;
 import io.realm.mongodb.User;
 import io.realm.mongodb.mongo.MongoClient;
 import io.realm.mongodb.mongo.MongoCollection;
 import io.realm.mongodb.mongo.MongoDatabase;
 import io.realm.mongodb.mongo.MongoCollection.*;
+import io.realm.mongodb.mongo.iterable.FindIterable;
+import io.realm.mongodb.mongo.iterable.MongoCursor;
+import io.realm.mongodb.mongo.options.FindOptions;
+
 import android.os.Build;
 
 
@@ -77,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     private Button clearBarcodes;
     private Button stockAudit;
     private Button manualAdd;
+    private Button saleReverse;
     ArrayList<String> barcode_list = new ArrayList<String>();
     List<Document> barcode_docs = new ArrayList<>();
     private App realmAppCon;
@@ -438,9 +444,73 @@ public class MainActivity extends AppCompatActivity {
             }
 
         });
+        saleReverse = (Button) findViewById(R.id.sale_reverse);
+        saleReverse.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View StockAudit) {
+                Log.i("onclick sale reverse","Clicking Sale reverse button");
+                AlertDialog.Builder builder= new AlertDialog.Builder(MainActivity.this);
+                User user = dbcon.getDatabaseConnection(MainActivity.this);
+                builder.setCancelable(true);
+                builder.setTitle("Reversing Sale");
+                builder.setMessage("Reverse "+barcodeCount.getText().toString()+" pcs from sale?");
+                builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.cancel();
+                    }
+                });
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Toast.makeText(getApplicationContext(),"Reversing Sale...",Toast.LENGTH_SHORT).show();
+                        MongoClient mongoClient = user.getMongoClient("mongodb-atlas");
+                        MongoDatabase database = mongoClient.getDatabase("contigojeans");
+                        MongoCollection<Document> stockOutwardCollection = database.getCollection("stockoutward");
+                        MongoCollection<Document> saleReverseCollection = database.getCollection("salereverse");
+                        List<Document> tmpBarcodeDocs =barcode_docs;
+                        for (int j = 0; j < barcode_docs.size(); j++) {
+                            RealmResultTask<MongoCursor<Document>> cursor = stockOutwardCollection.find(tmpBarcodeDocs.get(j)).iterator();
+                            int finalJ = j;
+                            cursor.getAsync(task -> {
+                                if(task.isSuccess()){
+                                    //System.out.println("found record"+tmpBarcodeDocs.get(finalJ).toString());
+                                    MongoCursor<Document> results = task.get();
+                                    while (results.hasNext()){
+                                        Document doc = results.next();
+                                        System.out.println(doc.toString());
+                                        stockOutwardCollection.deleteOne(doc).getAsync(del ->{
+
+                                        });
+                                        saleReverseCollection.insertOne(doc).getAsync(ins ->{
+
+                                        });
+                                        System.out.println("record inserted to sale revers "+doc.toString());
+                                    }
+                                }
+                                else {
+                                    System.out.println("Record not found in Sale");
+                                }
+                            });
+                        }
+                        barcodeText.setText("Scan Barcode");
+                        sell.setEnabled(false);
+                        addStock.setEnabled(false);
+                        clearBarcodes.setEnabled(false);
+                        stockAudit.setEnabled(false);
+                        saleReverse.setEnabled(false);
+                        barcode_list.clear();
+                        barcode_docs.clear();
+                        barcodeCount.setText("0");
+
+                    }
+                });
+                builder.show();
+            }
+        });
 
 
-                initialiseDetectorsAndSources();
+        initialiseDetectorsAndSources();
     }
 
     private void initialiseDetectorsAndSources() {
@@ -518,6 +588,7 @@ public class MainActivity extends AppCompatActivity {
                                     sell.setEnabled(true);
                                     clearBarcodes.setEnabled(true);
                                     stockAudit.setEnabled(true);
+                                    saleReverse.setEnabled(true);
                                     barcodeText.setGravity(Gravity.BOTTOM);
                                 }
                                 else{
