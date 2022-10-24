@@ -158,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
                                 addStock.setEnabled(false);
                                 clearBarcodes.setEnabled(false);
                                 stockAudit.setEnabled(false);
+                                saleReverse.setEnabled(false);
                                 barcode_list.clear();
                                 barcode_docs.clear();
                                 barcodeCount.setText("0");
@@ -209,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
                                 addStock.setEnabled(false);
                                 clearBarcodes.setEnabled(false);
                                 stockAudit.setEnabled(false);
+                                saleReverse.setEnabled(false);
                                 barcode_list.clear();
                                 barcode_docs.clear();
                                 barcodeCount.setText("0");
@@ -270,6 +272,7 @@ public class MainActivity extends AppCompatActivity {
                         addStock.setEnabled(false);
                         clearBarcodes.setEnabled(false);
                         stockAudit.setEnabled(false);
+                        saleReverse.setEnabled(false);
                         barcode_list.clear();
                         barcode_docs.clear();
                         barcodeCount.setText("0");
@@ -315,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
                                 addStock.setEnabled(false);
                                 clearBarcodes.setEnabled(false);
                                 stockAudit.setEnabled(false);
+                                saleReverse.setEnabled(false);
                                 barcode_list.clear();
                                 barcode_docs.clear();
                                 barcodeCount.setText("0");
@@ -572,7 +576,7 @@ public class MainActivity extends AppCompatActivity {
 
                             barcodeText.removeCallbacks(null);
                             barcodeData = barcodes.valueAt(0).displayValue;
-                            if(!barcode_list.contains(barcodeData) && (barcodeData.startsWith("CJ") || barcodeData.startsWith("CT") || barcodeData.startsWith("CS") ) && barcodeData.matches(".*?\\d{4}$") ){
+                            if(!barcode_list.contains(barcodeData) && (barcodeData.startsWith("CJ") || barcodeData.startsWith("CT") || barcodeData.startsWith("CS") || barcodeData.startsWith("CH") || barcodeData.startsWith("CA")) && barcodeData.matches(".*?\\d{4}$") && (barcodeData.length()==8 || barcodeData.length()==10) ){
                                 barcode_list.add(barcodeData);
                                 Document doc = new Document("barcode_id",barcodeData);
                                 barcode_docs.add(new Document("barcode_id",barcodeData));
