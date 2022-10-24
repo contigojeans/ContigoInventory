@@ -16,24 +16,31 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/barcode_text"
-        android:layout_width="403dp"
-        android:layout_height="200dp"
-        android:layout_below="@id/surface_view"
-        android:layout_centerInParent="true"
-        android:layout_marginTop="20dp"
-        android:fadingEdge="horizontal|vertical"
-        android:padding="5dp"
-        android:scrollbars="vertical"
-        android:text="Scan Barcode"
-        android:gravity="top"
-        android:textSize="20sp"
-        android:visibility="visible"
-        app:layout_constraintTop_toBottomOf="@id/surface_view"
-        tools:ignore="HardcodedText,MissingConstraints"
-        tools:layout_editor_absoluteX="4dp"
-        tools:visibility="visible" />
+    <ScrollView
+        android:id="@+id/barcodes_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:layout_below="@id/surface_view">
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/barcode_chips"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_below="@id/surface_view"
+            android:layout_centerInParent="true"
+            android:fadingEdge="horizontal|vertical"
+            android:scrollbars="vertical"
+            android:text="Scan Barcode"
+            android:textAlignment="viewStart"
+            android:textSize="15sp"
+            android:theme="@style/Theme.MaterialComponents.Light"
+            android:visibility="visible"
+            app:layout_constraintTop_toBottomOf="@id/surface_view"
+            app:chipSpacingHorizontal ="0dp"
+            app:chipSpacingVertical = "0dp"
+            tools:ignore="HardcodedText,MissingConstraints"
+            tools:layout_editor_absoluteX="1dp" />
+    </ScrollView>
 
     <TextView
         android:id="@+id/barcode_count"
@@ -52,7 +59,7 @@
         android:id="@+id/add_stock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/barcode_text"
+        android:layout_below="@id/barcodes_scroll"
         android:layout_centerVertical="true"
         android:layout_marginLeft="25dp"
         android:layout_marginTop="0dp"
@@ -64,13 +71,13 @@
         app:layout_constraintHorizontal_bias="0.219"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/barcode_text" />
+        app:layout_constraintTop_toBottomOf="@+id/barcodes_scroll" />
 
     <Button
         android:id="@+id/stock_audit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/barcode_text"
+        android:layout_below="@id/barcodes_scroll"
         android:layout_centerVertical="true"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="48dp"
@@ -82,13 +89,13 @@
         app:layout_constraintHorizontal_bias="0.219"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/barcode_text" />
+        app:layout_constraintTop_toBottomOf="@+id/barcodes_scroll" />
 
     <Button
         android:id="@+id/sale_reverse"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/barcode_text"
+        android:layout_below="@id/barcodes_scroll"
         android:layout_centerVertical="true"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="97dp"
@@ -100,13 +107,13 @@
         app:layout_constraintHorizontal_bias="0.219"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/barcode_text" />
+        app:layout_constraintTop_toBottomOf="@+id/barcodes_scroll" />
 
     <Button
         android:id="@+id/sell"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/barcode_text"
+        android:layout_below="@id/barcodes_scroll"
         android:layout_centerInParent="true"
         android:layout_marginLeft="40dp"
         android:layout_marginTop="1dp"
@@ -119,13 +126,13 @@
         app:layout_constraintHorizontal_bias="0.783"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/barcode_text" />
+        app:layout_constraintTop_toBottomOf="@+id/barcodes_scroll" />
 
     <Button
         android:id="@+id/manual_add_stock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/barcode_text"
+        android:layout_below="@id/barcodes_scroll"
         android:layout_centerInParent="true"
         android:layout_marginLeft="36dp"
         android:layout_marginTop="47dp"
@@ -137,7 +144,7 @@
         app:layout_constraintHorizontal_bias="0.783"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/barcode_text" />
+        app:layout_constraintTop_toBottomOf="@+id/barcodes_scroll" />
 
     <Button
         android:id="@+id/clear_barcodes"
@@ -145,9 +152,9 @@
         android:layout_height="45dp"
         android:layout_below="@id/surface_view"
         android:layout_alignParentRight="true"
-        android:layout_marginTop="29dp"
-        android:layout_marginRight="13dp"
-        android:layout_toLeftOf="@id/barcode_text"
+        android:layout_marginTop="-51dp"
+        android:layout_marginRight="15dp"
+        android:layout_toLeftOf="@id/barcodes_scroll"
         android:enabled="false"
         android:text="X"
         android:translationZ="10dp"

@@ -24,10 +24,12 @@ import android.view.Gravity;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +38,8 @@ import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 
 import java.io.IOException;
 import java.text.NumberFormat;
@@ -74,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private CameraSource cameraSource;
     private static final int REQUEST_CAMERA_PERMISSION = 201;
     private ToneGenerator toneGen1;
-    private TextView barcodeText;
+    //private TextView barcodeText;
     private TextView barcodeCount;
     private String barcodeData;
     private Button addStock;
@@ -83,48 +87,82 @@ public class MainActivity extends AppCompatActivity {
     private Button stockAudit;
     private Button manualAdd;
     private Button saleReverse;
+    private ChipGroup barcodeChips;
+    private ScrollView barcodeScroll;
     ArrayList<String> barcode_list = new ArrayList<String>();
     List<Document> barcode_docs = new ArrayList<>();
     private App realmAppCon;
     String RealmAppId = "contigorealm-tsygt";
     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss");
 
+    protected void addChip(String barcodeString) {
+        Chip barcode = new Chip(this);
+        barcode.setText(barcodeString);
+        barcode.setCloseIconVisible(true);
+        barcode.setOnCloseIconClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                barcodeChips.removeView(barcode);
+                barcode_list.remove(barcodeString);
+                Document doc = new Document("barcode_id",barcodeData);
+                barcode_docs.remove(doc);
+                barcodeCount.setText(String.valueOf(barcodeChips.getChildCount()));
+                if(barcodeChips.getChildCount()<1 ) {
+                    deActivateButtons();
+                }
+            }
+        });
+        barcodeChips.addView(barcode);
+        barcodeCount.setText(String.valueOf(barcodeChips.getChildCount()));
+        if( barcodeChips.getChildCount() > 0 ){
+            //enabling buttons after first scan of the barcodes
+            activateButtons();
 
+        }
+        barcodeScroll.fullScroll(View.FOCUS_DOWN);
+        //barcodeScroll.scrollTo(0,barcodeScroll.getBottom());
+    }
 
+    protected void activateButtons(){
+        addStock.setEnabled(true);
+        sell.setEnabled(true);
+        clearBarcodes.setEnabled(true);
+        stockAudit.setEnabled(true);
+        saleReverse.setEnabled(true);
+    }
+
+    protected void deActivateButtons(){
+        sell.setEnabled(false);
+        addStock.setEnabled(false);
+        clearBarcodes.setEnabled(false);
+        stockAudit.setEnabled(false);
+        saleReverse.setEnabled(false);
+        barcode_list.clear();
+        barcode_docs.clear();
+        barcodeChips.removeAllViews();
+        barcodeCount.setText(String.valueOf(barcodeChips.getChildCount()));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        /*
-        Realm.init(this);
-        realmAppCon =  new App(new AppConfiguration.Builder(RealmAppId).build());
-        User user = realmAppCon.currentUser();
-        //Credentials credentials = Credentials.emailPassword("contigojeans@gmail.com","contigo123!@#");
-        realmAppCon.loginAsync(Credentials.anonymous(), new App.Callback<User>() {
-            @Override
-            public void onResult(App.Result<User> result) {
-                if(result.isSuccess())
-                {
-                    Toast.makeText(getApplicationContext(),"Database Connection Successful!",Toast.LENGTH_LONG).show();
-                    Log.v("MongoDB_CON","Logged In Successfully");
-                }
-                else
-                {
-                    Toast.makeText(getApplicationContext(),"Database Connection Failed",Toast.LENGTH_LONG).show();
-                    System.out.println(result.getError());
-                    Log.v("MongoDB_CON","Failed to Login");
-                }
-            }
-        });
-         */
         DatabaseConnection dbcon = new DatabaseConnection();
-        //User user = dbcon.getDatabaseConnection(this);
         toneGen1 = new ToneGenerator(AudioManager.STREAM_MUSIC, 100);
         surfaceView = findViewById(R.id.surface_view);
-        barcodeText = findViewById(R.id.barcode_text);
+        //barcodeText = findViewById(R.id.barcode_text);
         barcodeCount = findViewById(R.id.barcode_count);
+        barcodeChips = findViewById(R.id.barcode_chips);
+        barcodeScroll = findViewById(R.id.barcodes_scroll);
+
+//        barcodeChips.getViewTreeObserver().addOnScrollChangedListener(new ViewTreeObserver.OnScrollChangedListener() {
+//            @Override
+//            public void onScrollChanged() {
+//                barcodeChips.clearFocus();
+//            }
+//        });
+
         addStock = (Button) findViewById(R.id.add_stock);
         addStock.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -153,15 +191,8 @@ public class MainActivity extends AppCompatActivity {
                             if(result.isSuccess()){
                                 Log.v("Add_stock_status","Stock Added Successfully");
                                 Toast.makeText(getApplicationContext(),"Success: Stock Added!",Toast.LENGTH_SHORT).show();
-                                barcodeText.setText("Scan Barcode");
-                                sell.setEnabled(false);
-                                addStock.setEnabled(false);
-                                clearBarcodes.setEnabled(false);
-                                stockAudit.setEnabled(false);
-                                saleReverse.setEnabled(false);
-                                barcode_list.clear();
-                                barcode_docs.clear();
-                                barcodeCount.setText("0");
+                                //barcodeText.setText("Scan Barcode");
+                                deActivateButtons();
                             }
                             else {
                                 Toast.makeText(getApplicationContext(),"Add Stock Failed: Try Again!",Toast.LENGTH_SHORT).show();
@@ -205,14 +236,8 @@ public class MainActivity extends AppCompatActivity {
                             if (result.isSuccess()) {
                                 Log.v("Sell_stock_status", "Stock Sold Successfully");
                                 Toast.makeText(getApplicationContext(), "Success: Stock Sold to "+buyerName, Toast.LENGTH_SHORT).show();
-                                barcodeText.setText("Scan Barcode");
-                                sell.setEnabled(false);
-                                addStock.setEnabled(false);
-                                clearBarcodes.setEnabled(false);
-                                stockAudit.setEnabled(false);
-                                saleReverse.setEnabled(false);
-                                barcode_list.clear();
-                                barcode_docs.clear();
+                                //barcodeText.setText("Scan Barcode");
+                                deActivateButtons();
                                 barcodeCount.setText("0");
                             } else {
                                 Toast.makeText(getApplicationContext(), "Sell Stock Failed: Try Again!", Toast.LENGTH_SHORT).show();
@@ -267,15 +292,8 @@ public class MainActivity extends AppCompatActivity {
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        barcodeText.setText("Scan Barcode");
-                        sell.setEnabled(false);
-                        addStock.setEnabled(false);
-                        clearBarcodes.setEnabled(false);
-                        stockAudit.setEnabled(false);
-                        saleReverse.setEnabled(false);
-                        barcode_list.clear();
-                        barcode_docs.clear();
-                        barcodeCount.setText("0");
+                        //barcodeText.setText("Scan Barcode");
+                        deActivateButtons();
                         Toast.makeText(getApplicationContext(),"Cleared Barcodes",Toast.LENGTH_SHORT).show();
                     }
                 });
@@ -313,15 +331,8 @@ public class MainActivity extends AppCompatActivity {
                             if(result.isSuccess()){
                                 Log.v("stock_audit_status","Stock Added Successfully");
                                 Toast.makeText(getApplicationContext(),"Success: Added stock to Audit!",Toast.LENGTH_SHORT).show();
-                                barcodeText.setText("Scan Barcode");
-                                sell.setEnabled(false);
-                                addStock.setEnabled(false);
-                                clearBarcodes.setEnabled(false);
-                                stockAudit.setEnabled(false);
-                                saleReverse.setEnabled(false);
-                                barcode_list.clear();
-                                barcode_docs.clear();
-                                barcodeCount.setText("0");
+                                //barcodeText.setText("Scan Barcode");
+                                deActivateButtons();
                             }
                             else {
                                 Toast.makeText(getApplicationContext(),"Stock Audit Failed: Try Again!",Toast.LENGTH_SHORT).show();
@@ -497,15 +508,8 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             });
                         }
-                        barcodeText.setText("Scan Barcode");
-                        sell.setEnabled(false);
-                        addStock.setEnabled(false);
-                        clearBarcodes.setEnabled(false);
-                        stockAudit.setEnabled(false);
-                        saleReverse.setEnabled(false);
-                        barcode_list.clear();
-                        barcode_docs.clear();
-                        barcodeCount.setText("0");
+                        //barcodeText.setText("Scan Barcode");
+                        deActivateButtons();
 
                     }
                 });
@@ -568,13 +572,12 @@ public class MainActivity extends AppCompatActivity {
                 final SparseArray<Barcode> barcodes = detections.getDetectedItems();
                 if (barcodes.size() != 0) {
 
-
-                    barcodeText.post(new Runnable() {
+                    barcodeChips.post(new Runnable() {
 
                         @Override
                         public void run() {
 
-                            barcodeText.removeCallbacks(null);
+                            //barcodeText.removeCallbacks(null);
                             barcodeData = barcodes.valueAt(0).displayValue;
                             if(!barcode_list.contains(barcodeData) && (barcodeData.startsWith("CJ") || barcodeData.startsWith("CT") || barcodeData.startsWith("CS") || barcodeData.startsWith("CH") || barcodeData.startsWith("CA")) && barcodeData.matches(".*?\\d{4}$") && (barcodeData.length()==8 || barcodeData.length()==10) ){
                                 barcode_list.add(barcodeData);
@@ -583,27 +586,9 @@ public class MainActivity extends AppCompatActivity {
                                 System.out.println(barcodes);
                                 System.out.println("printingdisplayvalue"+barcodes.valueAt(0).displayValue);
                                 toneGen1.startTone(ToneGenerator.TONE_CDMA_PIP, 150);
-                                String input= barcodeText.getText().toString();
-                                String output="";
-                                if(input.contains("Scan Barcode")){
-                                    //enabling buttons after first scan of the barcodes
-                                    output = barcodeData;
-                                    addStock.setEnabled(true);
-                                    sell.setEnabled(true);
-                                    clearBarcodes.setEnabled(true);
-                                    stockAudit.setEnabled(true);
-                                    saleReverse.setEnabled(true);
-                                    barcodeText.setGravity(Gravity.BOTTOM);
-                                }
-                                else{
-                                    output = input+" "+barcodeData;
-                                }
-                                System.out.println(output);
+                                addChip(barcodeData);
+                                System.out.println(barcodeData);
                                 System.out.println(barcode_list);
-                                barcodeText.setText(output);
-                                barcodeText.setMovementMethod(ScrollingMovementMethod.getInstance());
-                                Integer brcdecnt = barcode_list.size();
-                                barcodeCount.setText(brcdecnt.toString());
                             }
                         }
                     });
